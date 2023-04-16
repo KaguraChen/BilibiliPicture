@@ -25,15 +25,15 @@ class Application(tk.Frame):
         self.bp.place(x=0, y=0)
         self.bp.create_image(0, 0, image=self.photo, anchor='nw')
         # 创建标签
-        self.label1 = tk.Label(self.master, text="①专栏地址:", font=("黑体", 15))
+        self.label1 = tk.Label(self.master, text="①专栏地址:", font=("黑体", 12))
         self.label1.place(relx=0.08, rely=0.05)
         self.label2 = tk.Label(self.master, text="暂无下载内容", justify="center", width=40, height=1, fg="black")
         self.label2.place(relx=0.2, rely=0.83)
         self.label3 = tk.Label(self.master, width=40, justify="center", height=1, fg="black", text="当前路径为："+self.address, anchor="w")
         self.label3.place(relx=0.2, rely=0.88)
-        self.label4 = tk.Label(self.master, text="②空间地址:", font=("黑体", 15))
+        self.label4 = tk.Label(self.master, text="②空间地址:", font=("黑体", 12))
         self.label4.place(relx=0.08, rely=0.15)
-        self.label5 = tk.Label(self.master, text=" 空间页数:", font=("黑体", 15))
+        self.label5 = tk.Label(self.master, text=" 空间页数:", font=("黑体", 12))
         self.label5.place(relx=0.08, rely=0.25)
         # 创建输入框
         self.url1 = tk.StringVar()
@@ -47,11 +47,11 @@ class Application(tk.Frame):
         self.entry3 = tk.Entry(self.master, width=6, textvariable=self.url3)
         self.entry3.place(relx=0.25, rely=0.25)
         # 创建按钮
-        self.button1 = tk.Button(self.master, text="提交", font=("黑体", 20), height=1, command=self.sumit)
+        self.button1 = tk.Button(self.master, text="提交", font=("黑体", 15), height=1, command=self.sumit)
         self.button1.place(relx=0.75,rely=0.05)
         self.button2 = tk.Button(self.master, text="更\n改\n路\n径", font=("黑体", 15), height=4, command=self.addressChange)
         self.button2.place(relx=0.85,rely=0.04)
-        self.button3 = tk.Button(self.master, text="提交", font=("黑体", 20), height=1, command=self.uiddownload)
+        self.button3 = tk.Button(self.master, text="提交", font=("黑体", 15), height=1, command=self.uiddownload)
         self.button3.place(relx=0.75, rely=0.15)
 
     def addressChange(self):
@@ -66,7 +66,11 @@ class Application(tk.Frame):
             # 页面解析获得图片地址
             if url == '':
                 url = self.entry1.get()
-            resp = requests.get(url)
+            headers = {
+                'referer': 'https://space.bilibili.com/9277299/article',
+                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36'
+            }
+            resp = requests.get(url, headers=headers)
             page = BeautifulSoup(resp.text, "html.parser")
             imgs = page.find_all("img", class_=None)
             # 异步协程下载图片
