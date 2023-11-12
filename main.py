@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 import tkinter.filedialog
 import aiofiles
@@ -10,6 +11,7 @@ from bs4 import BeautifulSoup
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
+from tkinter import messagebox
 
 WIDTH, HEIGHT = 600, 400    # 窗口大小
 PADDING = 4                # 右下角窗口边距
@@ -27,7 +29,11 @@ class DownloadUI(tk.Frame):    # 下载UI
 
     def ui_init(self) -> None:
         # 创建背景图片
-        self.bp = tk.PhotoImage(file=f"bg.png").subsample(2)
+        try:
+            self.bp = tk.PhotoImage(file=f"bg.png").subsample(2)
+        except Exception as e:
+            messagebox.showerror("错误", "缺少背景图片！")
+            sys.exit(0)
         self.bp_canvas = tk.Canvas(width=WIDTH, height=HEIGHT)
         self.bp_canvas.place(x=0, y=0)
         self.bp_canvas.create_image(0, 0, image=self.bp, anchor='nw')
@@ -69,10 +75,10 @@ class DownloadUI(tk.Frame):    # 下载UI
         self.space_btn.place(relx=0.75, rely=0.15)
 
     def change_path(self) -> None:  # 更改下载路径
-        address = tk.filedialog.askdirectory()
-        if address != '':
-            self.address = address
-            self.path_label.configure(text=f"当前路径为：{self.address}")
+        path = tk.filedialog.askdirectory()
+        if path != '':
+            self.path = path
+            self.path_label.configure(text=f"当前路径为：{self.path}")
 
     def column_download(self) -> None:  # 一个专栏图片下载
         self.info_label.configure(text="正在下载中......")
@@ -110,6 +116,9 @@ class DownloadCore():   # 下载内核
 
             self.times += 1
             return self.times
+        except FileNotFoundError:
+            messagebox.showerror("错误", "下载路径不存在！")
+            return None
         except Exception as e:
             print(e.with_traceback())
             return None
@@ -155,8 +164,13 @@ class DownloadCore():   # 下载内核
             with ThreadPoolExecutor(20) as t:
                 for id in ids:
                     dir_path = path + '\\' + id.group("title").replace('/', '|').replace(':', '|')
+                    print(dir_path)
                     if not os.path.exists(dir_path):
-                        os.mkdir(dir_path)
+                        try:
+                            os.mkdir(dir_path)
+                        except FileNotFoundError:
+                            messagebox.showerror("错误", "下载路径不存在！")
+                            return None
                     url = "https://www.bilibili.com/read/cv" + id.group("id") + "?spm_id_from=333.999.0.0"
                     t.submit(self.column_download(url, dir_path))
                     flag = True
