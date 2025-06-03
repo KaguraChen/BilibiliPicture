@@ -109,7 +109,7 @@ class DownloadCore():   # 下载内核
         try:
             # 页面解析获得图片地址
             resp = requests.get(url, headers=self.headers)
-            imgs = BeautifulSoup(resp.text, "html.parser").find_all("img", class_=None)
+            imgs = BeautifulSoup(resp.text, "html.parser").find_all("img", class_="b-img__inner")
             # 异步下载图片
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # 解决RuntimeError: Event loop is closed
             asyncio.run(self.async_main(imgs, path))
@@ -126,8 +126,9 @@ class DownloadCore():   # 下载内核
     async def async_main(self, imgs, path) -> None:
         tasks = []
         for img in imgs:
-            src = img.get("data-src")
-            name = path + "\\" + src.split("/")[-1]
+            print(img)
+            src = img.get("src")
+            name = path + "\\" + src.split("/")[-1].split("@")[0]
             src = "https:" + src
             tasks.append(asyncio.create_task(self.picture_download(src, name)))
         await asyncio.gather(*tasks)
@@ -164,7 +165,6 @@ class DownloadCore():   # 下载内核
             with ThreadPoolExecutor(20) as t:
                 for id in ids:
                     dir_path = path + '\\' + id.group("title").replace('/', '|').replace(':', '|')
-                    print(dir_path)
                     if not os.path.exists(dir_path):
                         try:
                             os.mkdir(dir_path)
